@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework> 
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="accoremgd">
+	  <HintPath>C:\Program Files\Autodesk\AutoCAD 2020\accoremgd.dll</HintPath>
+	  <Private>false</Private>
+	</Reference>
+	<Reference Include="Acdbmgd">
+	  <HintPath>C:\Program Files\Autodesk\AutoCAD 2020\acdbmgd.dll</HintPath>
+	  <Private>false</Private>
+	</Reference>
+	<Reference Include="Acmgd">
+	  <HintPath>C:\Program Files\Autodesk\AutoCAD 2020\acmgd.dll</HintPath>
+	  <Private>false</Private>
+	</Reference>
+	<Reference Include="acdbmgdbrep">
+	  <HintPath>C:\Program Files\Autodesk\AutoCAD 2020\acdbmgdbrep.dll</HintPath>
+	  <Private>false</Private>
+	</Reference>
+  </ItemGroup>
+	
+  <ItemGroup>
+    <Compile Include="Collect.fs" />
+    <Compile Include="Main.fs" />
+  </ItemGroup>
+</Project>

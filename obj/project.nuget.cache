@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "GgglYVLrDKqavJ13gWApRuPlld7/wiloyDCRb7KuuIC6s8DIrQboGreJznBwyXrK//1JxfsvhEsUlHO3HkL/iA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\lulwh\\UG_work\\AcadCollectBlocks\\AcadCollectBlocks.fsproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\lulwh\\.nuget\\packages\\fsharp.core\\5.0.0\\fsharp.core.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

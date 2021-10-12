@@ -1,0 +1,49 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\lulwh\\UG_work\\AcadCollectBlocks\\AcadCollectBlocks.fsproj": {}
+  },
+  "projects": {
+    "C:\\Users\\lulwh\\UG_work\\AcadCollectBlocks\\AcadCollectBlocks.fsproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\lulwh\\UG_work\\AcadCollectBlocks\\AcadCollectBlocks.fsproj",
+        "projectName": "AcadCollectBlocks",
+        "projectPath": "C:\\Users\\lulwh\\UG_work\\AcadCollectBlocks\\AcadCollectBlocks.fsproj",
+        "packagesPath": "C:\\Users\\lulwh\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\lulwh\\UG_work\\AcadCollectBlocks\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\lulwh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net48"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net48": {
+            "targetAlias": "net48",
+            "projectReferences": {}
+          }
+        }
+      },
+      "frameworks": {
+        "net48": {
+          "targetAlias": "net48",
+          "dependencies": {
+            "FSharp.Core": {
+              "target": "Package",
+              "version": "[5.0.0, )",
+              "generatePathProperty": true
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.201\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
