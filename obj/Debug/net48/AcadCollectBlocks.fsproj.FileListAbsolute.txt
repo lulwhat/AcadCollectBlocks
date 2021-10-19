@@ -15,10 +15,9 @@ C:\Users\lulwh\UG_work\AcadCollectBlocks\bin\Debug\net48\ru\FSharp.Core.resource
 C:\Users\lulwh\UG_work\AcadCollectBlocks\bin\Debug\net48\tr\FSharp.Core.resources.dll
 C:\Users\lulwh\UG_work\AcadCollectBlocks\bin\Debug\net48\zh-Hans\FSharp.Core.resources.dll
 C:\Users\lulwh\UG_work\AcadCollectBlocks\bin\Debug\net48\zh-Hant\FSharp.Core.resources.dll
-C:\Users\lulwh\UG_work\AcadCollectBlocks\obj\Debug\net48\AcadCollectBlocks.fsprojAssemblyReference.cache
 C:\Users\lulwh\UG_work\AcadCollectBlocks\obj\Debug\net48\AcadCollectBlocks.AssemblyInfoInputs.cache
 C:\Users\lulwh\UG_work\AcadCollectBlocks\obj\Debug\net48\AcadCollectBlocks.AssemblyInfo.fs
-C:\Users\lulwh\UG_work\AcadCollectBlocks\obj\Debug\net48\AcadCollectBlocks.fsproj.CopyComplete
 C:\Users\lulwh\UG_work\AcadCollectBlocks\obj\Debug\net48\AcadCollectBlocks.dll
 C:\Users\lulwh\UG_work\AcadCollectBlocks\obj\Debug\net48\AcadCollectBlocks.xml
 C:\Users\lulwh\UG_work\AcadCollectBlocks\obj\Debug\net48\AcadCollectBlocks.pdb
+C:\Users\lulwh\UG_work\AcadCollectBlocks\obj\Debug\net48\AcadCollectBlocks.fsproj.AssemblyReference.cache
