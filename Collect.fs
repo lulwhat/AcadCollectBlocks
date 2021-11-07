@@ -258,10 +258,10 @@ module Collect =
                   let bt =
                       db.BlockTableId.GetObject(OpenMode.ForWrite) :?> BlockTable
 
-                  let rec addBlockToTable (valveNumber: int) (valveSolids: Solid3d list) =
+                  let rec createBlock (valveNumber: int) (valveSolids: Solid3d list) =
                       bt.Has($"задвижка{valveNumber}")
                       |> function
-                          | true -> addBlockToTable (valveNumber + 1) valveSolids
+                          | true -> createBlock (valveNumber + 1) valveSolids
                           | false ->
                               let nbtr = new BlockTableRecord()
 
@@ -316,20 +316,11 @@ module Collect =
                               docBtr.AppendEntity(br) |> ignore
                               tr.AddNewlyCreatedDBObject(br, true)
 
-                  // remove entities after adding block to drawing space
-                  //oIdCol
-                  //|> Seq.cast<ObjectId>
-                  //|> Seq.iter
-                  //    (fun id ->
-                  //        tr.GetObject(id, OpenMode.ForWrite)
-                  //        |> function
-                  //            | dbobj -> dbobj.Erase())
-
 
                   if docLt.Has(layerName) then
                       if (List.length groupedValvesSolids) > 0 then
                           groupedValvesSolids
-                          |> List.iter (fun valveSolids -> addBlockToTable 0 valveSolids)
+                          |> List.iter (fun group -> createBlock 0 group)
 
                           ed.WriteMessage(
                               $"Создано {List.length groupedValvesSolids} блоков в слое "
