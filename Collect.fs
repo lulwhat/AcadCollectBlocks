@@ -163,161 +163,161 @@ module Collect =
              if psr.Status = PromptStatus.OK then
                  use tr = db.TransactionManager.StartTransaction()
 
-                 (let docBtr =
-                     tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) :?> BlockTableRecord
-
-                  let docLt =
+                 (let docLt =
                       tr.GetObject(db.LayerTableId, OpenMode.ForWrite) :?> LayerTable
 
-                  let solidsLtr =
-                      docLt
-                      |> Seq.cast<ObjectId>
-                      |> Seq.map (fun id -> tr.GetObject(id, OpenMode.ForRead) :?> LayerTableRecord)
-                      |> Seq.find (fun ltr -> ltr.Name = layerName)
-
-                  let solids =
-                      psr.Value
-                      |> Seq.cast<SelectedObject>
-                      |> Seq.map (fun (so: SelectedObject) -> tr.GetObject(so.ObjectId, OpenMode.ForRead) :?> Solid3d)
-                      |> Seq.toList
-                      |> List.filter
-                          (fun sol ->
-                              tr.GetObject(sol.LayerId, OpenMode.ForRead) :?> LayerTableRecord
-                              |> function
-                                  | ltr -> ltr.Name = layerName)
-
-                  let cones =
-                      solids |> List.filter (fun sol -> isCone sol)
-
-                  let toruses =
-                      solids |> List.filter (fun sol -> isTorus sol)
-
-                  let cylinders =
-                      solids |> List.filter (fun sol -> isCylinder sol)
-
-                  let boxes =
-                      solids |> List.filter (fun sol -> isBox sol)
-
-
-                  let solidsIndicesByDistance (solid: Solid3d) (comparedSolids: Solid3d list) =
-                      List.mapi (fun i el -> i, el) comparedSolids
-                      |> List.map (fun (i, el) -> i, el.Bounds.Value.MaxPoint.DistanceTo(solid.Bounds.Value.MaxPoint))
-                      |> List.sortBy snd
-
-
-                  let rec findValves
-                      (valves: Solid3d list list)
-                      (toruses: Solid3d list)
-                      (cylinders: Solid3d list)
-                      (cones: Solid3d list)
-                      (boxes: Solid3d list)
-                      =
-                      match (toruses, cylinders) with
-                      | [], _ | _, [] -> valves
-                      | (head :: tail), _ ->
-                          let valveTorCylinder =
-                              try
-                                  [ head
-                                    cylinders.[(solidsIndicesByDistance head cylinders).[0] |> fst] ]
-                              with
-                              | _ -> []
-
-                          let valveCones =
-                              try
-                                  ((solidsIndicesByDistance head cones).[0], (solidsIndicesByDistance head cones).[1])
-                                  |> function
-                                      | (i1, dist1), (i2, dist2) when (dist1 <= 1.7) && (dist2 <= 1.7) ->
-                                          [ cones.[i1]; cones.[i2] ]
-                                      | _ -> []
-                              with
-                              | _ -> []
-
-                          let valveBox =
-                              try
-                                  (solidsIndicesByDistance head boxes).[0]
-                                  |> function
-                                      | (i, dist) when (dist <= 1.7) -> [ boxes.[i] ]
-                                      | _ -> []
-                              with
-                              | _ -> []
-
-                          let valveSolids =
-                              valveTorCylinder
-                              @ valveCones
-                              @ if valveCones.Length = 0 then
-                                    valveBox
-                                else
-                                    []
-
-                          findValves (valveSolids :: valves) tail cylinders cones boxes
-
-
-                  let groupedValvesSolids: Solid3d list list =
-                      findValves [] toruses cylinders cones boxes
-
-                  let bt =
-                      db.BlockTableId.GetObject(OpenMode.ForWrite) :?> BlockTable
-
-                  let rec createBlock (valveNumber: int) (valveSolids: Solid3d list) =
-                      bt.Has($"задвижка{valveNumber}")
-                      |> function
-                          | true -> createBlock (valveNumber + 1) valveSolids
-                          | false ->
-                              let nbtr = new BlockTableRecord()
-
-                              // add blocks layer to drawing
-                              if not (docLt.Has(layerName + "_блоки_")) then
-                                  let blocksLayer = new LayerTableRecord()
-                                  blocksLayer.Name <- layerName + "_блоки_"
-                                  blocksLayer.Color <- solidsLtr.Color
-                                  docLt.Add(blocksLayer) |> ignore
-                                  tr.AddNewlyCreatedDBObject(blocksLayer, true)
-
-                              let oIdCol = new ObjectIdCollection()
-
-                              valveSolids
-                              |> List.iter (fun sol -> oIdCol.Add(sol.Id) |> ignore)
-
-                              nbtr.Origin <- valveSolids.[0].Bounds.Value.MaxPoint
-
-                              nbtr.Name <- $"задвижка{valveNumber}"
-                              nbtr.BlockScaling <- BlockScaling.Uniform
-                              nbtr.Explodable <- true
-
-                              bt.Add(nbtr) |> ignore
-                              tr.AddNewlyCreatedDBObject(nbtr, true)
-
-                              let map = new IdMapping()
-                              db.DeepCloneObjects(oIdCol, nbtr.ObjectId, map, false)
-
-                              let coll = new ObjectIdCollection()
-
-                              // add entities to blockspace
-                              map
-                              |> Seq.cast<IdPair>
-                              |> Seq.iter
-                                  (fun pair ->
-                                      if pair.IsPrimary then
-                                          let ent =
-                                              tr.GetObject(pair.Value, OpenMode.ForWrite) :?> Entity
-
-                                          if ent <> null then
-                                              ent.Layer <- layerName + "_блоки_"
-                                              ent.ColorIndex <- 0
-                                              coll.Add(ent.ObjectId) |> ignore)
-
-                              nbtr.AssumeOwnershipOf(coll)
-
-                              // add block to drawing space
-                              let br = new BlockReference(nbtr.Origin, nbtr.Id)
-                              br.Layer <- layerName + "_блоки_"
-                              br.Color <- Color.FromColorIndex(ColorMethod.ByLayer, solidsLtr.Color.ColorIndex)
-
-                              docBtr.AppendEntity(br) |> ignore
-                              tr.AddNewlyCreatedDBObject(br, true)
-
-
+                  // check if input layer exists, exit otherwise
                   if docLt.Has(layerName) then
+                      let docBtr =
+                          tr.GetObject(db.CurrentSpaceId, OpenMode.ForWrite) :?> BlockTableRecord
+
+                      let solidsLtr =
+                          docLt
+                          |> Seq.cast<ObjectId>
+                          |> Seq.map (fun id -> tr.GetObject(id, OpenMode.ForRead) :?> LayerTableRecord)
+                          |> Seq.find (fun ltr -> ltr.Name = layerName)
+
+                      let solids =
+                          psr.Value
+                          |> Seq.cast<SelectedObject>
+                          |> Seq.map (fun (so: SelectedObject) -> tr.GetObject(so.ObjectId, OpenMode.ForRead) :?> Solid3d)
+                          |> Seq.toList
+                          |> List.filter
+                              (fun sol ->
+                                  tr.GetObject(sol.LayerId, OpenMode.ForRead) :?> LayerTableRecord
+                                  |> function
+                                      | ltr -> ltr.Name = layerName)
+
+                      let cones =
+                          solids |> List.filter (fun sol -> isCone sol)
+
+                      let toruses =
+                          solids |> List.filter (fun sol -> isTorus sol)
+
+                      let cylinders =
+                          solids |> List.filter (fun sol -> isCylinder sol)
+
+                      let boxes =
+                          solids |> List.filter (fun sol -> isBox sol)
+
+
+                      let solidsIndicesByDistance (solid: Solid3d) (comparedSolids: Solid3d list) =
+                          List.mapi (fun i el -> i, el) comparedSolids
+                          |> List.map (fun (i, el) -> i, el.Bounds.Value.MaxPoint.DistanceTo(solid.Bounds.Value.MaxPoint))
+                          |> List.sortBy snd
+
+
+                      let rec findValves
+                          (valves: Solid3d list list)
+                          (toruses: Solid3d list)
+                          (cylinders: Solid3d list)
+                          (cones: Solid3d list)
+                          (boxes: Solid3d list)
+                          =
+                          match (toruses, cylinders) with
+                          | [], _ | _, [] -> valves
+                          | (head :: tail), _ ->
+                              let valveTorCylinder =
+                                  try
+                                      [ head
+                                        cylinders.[(solidsIndicesByDistance head cylinders).[0] |> fst] ]
+                                  with
+                                  | _ -> []
+
+                              let valveCones =
+                                  try
+                                      ((solidsIndicesByDistance head cones).[0], (solidsIndicesByDistance head cones).[1])
+                                      |> function
+                                          | (i1, dist1), (i2, dist2) when (dist1 <= 1.7) && (dist2 <= 1.7) ->
+                                              [ cones.[i1]; cones.[i2] ]
+                                          | _ -> []
+                                  with
+                                  | _ -> []
+
+                              let valveBox =
+                                  try
+                                      (solidsIndicesByDistance head boxes).[0]
+                                      |> function
+                                          | (i, dist) when (dist <= 1.7) -> [ boxes.[i] ]
+                                          | _ -> []
+                                  with
+                                  | _ -> []
+
+                              let valveSolids =
+                                  valveTorCylinder
+                                  @ valveCones
+                                  @ if valveCones.Length = 0 then
+                                        valveBox
+                                    else
+                                        []
+
+                              findValves (valveSolids :: valves) tail cylinders cones boxes
+
+
+                      let groupedValvesSolids: Solid3d list list =
+                          findValves [] toruses cylinders cones boxes
+
+                      let bt =
+                          db.BlockTableId.GetObject(OpenMode.ForWrite) :?> BlockTable
+
+                      let rec createBlock (valveNumber: int) (valveSolids: Solid3d list) =
+                          bt.Has($"задвижка{valveNumber}")
+                          |> function
+                              | true -> createBlock (valveNumber + 1) valveSolids
+                              | false ->
+                                  let nbtr = new BlockTableRecord()
+
+                                  // add blocks layer to drawing
+                                  if not (docLt.Has(layerName + "_блоки_")) then
+                                      let blocksLayer = new LayerTableRecord()
+                                      blocksLayer.Name <- layerName + "_блоки_"
+                                      blocksLayer.Color <- solidsLtr.Color
+                                      docLt.Add(blocksLayer) |> ignore
+                                      tr.AddNewlyCreatedDBObject(blocksLayer, true)
+
+                                  let oIdCol = new ObjectIdCollection()
+
+                                  valveSolids
+                                  |> List.iter (fun sol -> oIdCol.Add(sol.Id) |> ignore)
+
+                                  nbtr.Origin <- valveSolids.[0].Bounds.Value.MaxPoint
+
+                                  nbtr.Name <- $"задвижка{valveNumber}"
+                                  nbtr.BlockScaling <- BlockScaling.Uniform
+                                  nbtr.Explodable <- true
+
+                                  bt.Add(nbtr) |> ignore
+                                  tr.AddNewlyCreatedDBObject(nbtr, true)
+
+                                  let map = new IdMapping()
+                                  db.DeepCloneObjects(oIdCol, nbtr.ObjectId, map, false)
+
+                                  let coll = new ObjectIdCollection()
+
+                                  // add entities to blockspace
+                                  map
+                                  |> Seq.cast<IdPair>
+                                  |> Seq.iter
+                                      (fun pair ->
+                                          if pair.IsPrimary then
+                                              let ent =
+                                                  tr.GetObject(pair.Value, OpenMode.ForWrite) :?> Entity
+
+                                              if ent <> null then
+                                                  ent.Layer <- layerName + "_блоки_"
+                                                  ent.ColorIndex <- 0
+                                                  coll.Add(ent.ObjectId) |> ignore)
+
+                                  nbtr.AssumeOwnershipOf(coll)
+
+                                  // add block to drawing space
+                                  let br = new BlockReference(nbtr.Origin, nbtr.Id)
+                                  br.Layer <- layerName + "_блоки_"
+                                  br.Color <- Color.FromColorIndex(ColorMethod.ByLayer, solidsLtr.Color.ColorIndex)
+
+                                  docBtr.AppendEntity(br) |> ignore
+                                  tr.AddNewlyCreatedDBObject(br, true)
+
                       if (List.length groupedValvesSolids) > 0 then
                           groupedValvesSolids
                           |> List.iter (fun group -> createBlock 0 group)
@@ -329,8 +329,9 @@ module Collect =
                           )
                       else
                           ed.WriteMessage("Не найдено ни одной задвижки\n")
+
                   else
-                      ed.WriteMessage("Выбранный слой не найден\n")
+                    ed.WriteMessage("Выбранный слой не найден\n")
 
                   tr.Commit())
 
